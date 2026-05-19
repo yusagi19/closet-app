@@ -22,23 +22,25 @@ const CATEGORIES = [
 ];
 
 const COLORS = [
-  { id: 'white',     label: 'ホワイト',     hex: '#F5F5F5' },
-  { id: 'black',     label: 'ブラック',     hex: '#1C1C1E' },
-  { id: 'gray',      label: 'グレー',       hex: '#8E8E93' },
-  { id: 'navy',      label: 'ネイビー',     hex: '#1B3A6B' },
-  { id: 'blue',      label: 'ブルー',       hex: '#2C7BE5' },
-  { id: 'lightblue', label: 'ライトブルー', hex: '#5AC8FA' },
-  { id: 'red',       label: 'レッド',       hex: '#FF3B30' },
-  { id: 'pink',      label: 'ピンク',       hex: '#FF69B4' },
-  { id: 'beige',     label: 'ベージュ',     hex: '#D4B896' },
-  { id: 'brown',     label: 'ブラウン',     hex: '#A0522D' },
-  { id: 'green',     label: 'グリーン',     hex: '#34C759' },
-  { id: 'khaki',     label: 'カーキ',       hex: '#6B7C45' },
-  { id: 'yellow',    label: 'イエロー',     hex: '#FFCC00' },
-  { id: 'orange',    label: 'オレンジ',     hex: '#FF9500' },
-  { id: 'purple',    label: 'パープル',     hex: '#AF52DE' },
-  { id: 'multi',     label: 'マルチ',       hex: '#FF6B6B' },
-  { id: 'other',     label: 'その他',       hex: '#C7C7CC' },
+  { id: 'white',    label: 'ホワイト',   hex: '#F5F5F5' },
+  { id: 'ivory',    label: 'アイボリー', hex: '#FFFFF0' },
+  { id: 'beige',    label: 'ベージュ',   hex: '#D4B896' },
+  { id: 'gray',     label: 'グレー',     hex: '#8E8E93' },
+  { id: 'black',    label: 'ブラック',   hex: '#1C1C1E' },
+  { id: 'navy',     label: 'ネイビー',   hex: '#1B3A6B' },
+  { id: 'blue',     label: 'ブルー',     hex: '#2C7BE5' },
+  { id: 'green',    label: 'グリーン',   hex: '#34C759' },
+  { id: 'khaki',    label: 'カーキ',     hex: '#6B7C45' },
+  { id: 'red',      label: 'レッド',     hex: '#FF3B30' },
+  { id: 'pink',     label: 'ピンク',     hex: '#FF69B4' },
+  { id: 'lavender', label: 'ラベンダー', hex: '#B57BDB' },
+  { id: 'yellow',   label: 'イエロー',   hex: '#FFCC00' },
+  { id: 'orange',   label: 'オレンジ',   hex: '#FF9500' },
+  { id: 'brown',    label: 'ブラウン',   hex: '#A0522D' },
+  { id: 'gold',     label: 'ゴールド',   hex: '#C9A84C' },
+  { id: 'silver',   label: 'シルバー',   hex: '#A8A9AD' },
+  { id: 'multi',    label: 'マルチ',     hex: '#FF6B6B' },
+  { id: 'other',    label: 'その他',     hex: '#C7C7CC' },
 ];
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -275,7 +277,7 @@ function renderSearch() {
           ${CATEGORIES.map(c => searchChip('category', c.id, `${c.icon} ${c.label}`)).join('')}
         </div>
 
-        <p class="filter-label">色</p>
+        <p class="filter-label">カラー</p>
         <div class="filter-chips">
           ${searchChip('color','all','全て')}
           ${COLORS.map(c => `
@@ -448,7 +450,7 @@ function renderForm() {
         </div>
 
         <div class="form-group">
-          <label class="form-label">色</label>
+          <label class="form-label">カラー</label>
           <select class="form-select" id="f-color">
             <option value="">選択してください</option>
             ${COLORS.map(c => `<option value="${c.id}" ${sel('color', c.id)}>${c.label}</option>`).join('')}
