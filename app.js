@@ -370,6 +370,16 @@ function renderStats() {
           }).join('')}
           ${items.length === 0 ? '<div class="stats-row"><div class="stats-row-label" style="color:var(--text-3)">データなし</div></div>' : ''}
         </div>
+
+        <div class="stats-section">
+          <h3 class="stats-heading">データ管理</h3>
+          <div class="backup-body">
+            <p class="backup-desc">アイテムデータをJSONファイルに保存・復元できます。ホーム画面からアプリを削除する前にバックアップしておくと安心です。</p>
+            <button class="btn-backup" data-action="exportData">📤 バックアップを保存</button>
+            <button class="btn-backup btn-backup-import" data-action="importData">📥 バックアップから復元</button>
+            <input type="file" id="import-input" accept=".json" style="display:none">
+          </div>
+        </div>
       </div>
 
       ${bottomNav()}
@@ -643,10 +653,26 @@ function handleClick(e) {
     case 'save':
       saveItem();
       break;
+
+    case 'exportData':
+      exportData();
+      break;
+
+    case 'importData':
+      document.getElementById('import-input')?.click();
+      break;
   }
 }
 
 function handleChange(e) {
+  // Import JSON
+  if (e.target.id === 'import-input') {
+    const file = e.target.files[0];
+    if (file) importData(file);
+    e.target.value = '';
+    return;
+  }
+
   // Photo picked
   if (e.target.id === 'photo-input') {
     const file = e.target.files[0];
@@ -764,6 +790,64 @@ async function deleteItem(id) {
   } catch (err) {
     console.error(err);
     alert('削除に失敗しました');
+  }
+}
+
+// ── Backup / Restore ─────────────────────────────────────────────────────────
+
+function exportData() {
+  if (state.items.length === 0) {
+    alert('エクスポートするアイテムがありません');
+    return;
+  }
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    items: state.items,
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `closet-backup-${date}.json`;
+
+  // iOSはWeb Share APIでファイル共有
+  if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'application/json' })] })) {
+    const file = new File([blob], filename, { type: 'application/json' });
+    navigator.share({ files: [file], title: 'クローゼット バックアップ' })
+      .catch(err => { if (err.name !== 'AbortError') alert('保存に失敗しました'); });
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function importData(file) {
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    const incoming = Array.isArray(parsed) ? parsed : (parsed.items || []);
+
+    if (!incoming.length) { alert('有効なデータが見つかりませんでした'); return; }
+
+    const existingIds = new Set(state.items.map(i => i.id));
+    const newItems = incoming.filter(i => !existingIds.has(i.id));
+
+    if (!confirm(`${incoming.length}件のデータが見つかりました。\n新規追加: ${newItems.length}件\n\n復元しますか？`)) return;
+
+    for (const item of newItems) {
+      await db.add(item);
+      state.items.push(item);
+    }
+    state.items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    alert(`${newItems.length}件を復元しました！`);
+    switchTab('home');
+  } catch (err) {
+    console.error(err);
+    alert('ファイルの読み込みに失敗しました。正しいバックアップファイルか確認してください。');
   }
 }
 

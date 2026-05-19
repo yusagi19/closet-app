@@ -402,6 +402,37 @@ img { display: block; }
   margin-top: 4px;
 }
 
+.backup-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.backup-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.btn-backup {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  background: var(--primary-bg);
+  border: 1.5px solid var(--primary);
+  color: var(--primary-dark);
+  transition: opacity .15s;
+}
+.btn-backup:active { opacity: .7; }
+.btn-backup-import {
+  background: var(--bg);
+  border-color: var(--separator);
+  color: var(--text-2);
+}
+
 .stats-section {
   margin: 0 16px 16px;
   background: var(--card);
