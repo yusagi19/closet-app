@@ -1,4 +1,4 @@
-const CACHE = 'closet-v3';
+const CACHE = 'closet-v4';
 const ASSETS = ['./index.html', './app.css', './db.js', './app.js', './manifest.json'];
 
 self.addEventListener('install', e => {
@@ -15,8 +15,15 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+// ネットワーク優先：オンライン時は常に最新版を取得、オフライン時はキャッシュを使用
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => cached))
+    fetch(e.request)
+      .then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
