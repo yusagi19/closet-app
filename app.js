@@ -178,7 +178,7 @@ function renderHome() {
   return `
     <div class="screen">
       <div class="app-header">
-        <h1 class="app-title">クローゼット</h1>
+        <h1 class="app-title">アイテム管理</h1>
       </div>
 
       <div class="owner-tabs">
