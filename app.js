@@ -18,6 +18,8 @@ const CATEGORIES = [
   { id: 'accessories', label: 'アクセサリー',        icon: '💍' },
   { id: 'underwear',   label: '下着・ソックス',      icon: '🧦' },
   { id: 'sports',      label: 'スポーツウェア',      icon: '🏃' },
+  { id: 'skincare',    label: 'スキンケア',          icon: '🧴' },
+  { id: 'cosmetics',   label: 'コスメ',             icon: '💄' },
   { id: 'other',       label: 'その他',             icon: '📦' },
 ];
 
