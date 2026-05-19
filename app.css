@@ -118,7 +118,7 @@ img { display: block; }
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 20px);
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 20px);
 }
 
 /* ── Owner Tabs ───────────────────────────────────── */
@@ -287,11 +287,11 @@ img { display: block; }
   display: flex;
   background: var(--card);
   border-top: 1px solid var(--separator);
-  padding-bottom: var(--safe-bottom);
-  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .nav-item {
   flex: 1;
+  height: 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -775,7 +775,7 @@ img { display: block; }
 .fab {
   position: fixed;
   right: 20px;
-  bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
   width: 56px;
   height: 56px;
   border-radius: 50%;
