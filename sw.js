@@ -1,4 +1,4 @@
-const CACHE = 'closet-v9';
+const CACHE = 'closet-v10';
 const ASSETS = ['./index.html', './app.css?v=8', './db.js?v=8', './app.js?v=8', './manifest.json'];
 
 self.addEventListener('install', e => {

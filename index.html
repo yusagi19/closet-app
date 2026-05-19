@@ -11,6 +11,16 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="app.css?v=8">
+  <style>
+    /* safe area override – inline to bypass CSS cache */
+    .bottom-nav {
+      height: auto !important;
+      padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    }
+    .nav-item { height: 56px !important; }
+    .scroll-body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 20px) !important; }
+    .fab { bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 16px) !important; }
+  </style>
 </head>
 <body>
   <div id="root">
