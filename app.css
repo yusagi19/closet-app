@@ -117,7 +117,7 @@ img { display: block; }
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 20px);
+  padding-bottom: calc(46px + env(safe-area-inset-bottom, 0px) + 20px);
 }
 
 /* ── Owner Tabs ───────────────────────────────────── */
@@ -294,18 +294,18 @@ img { display: block; }
 }
 .nav-item {
   flex: 1;
-  height: 56px;
+  height: 46px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 8px 0;
+  padding: 6px 0;
   color: var(--text-3);
   transition: color .15s;
 }
 .nav-item.active { color: var(--primary); }
-.nav-icon  { font-size: 22px; line-height: 1; }
+.nav-icon  { font-size: 20px; line-height: 1; }
 .nav-label { font-size: 10px; font-weight: 500; }
 
 /* ── Search Screen ────────────────────────────────── */
@@ -778,7 +778,7 @@ img { display: block; }
 .fab {
   position: fixed;
   right: 20px;
-  bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
+  bottom: calc(46px + env(safe-area-inset-bottom, 0px) + 16px);
   width: 56px;
   height: 56px;
   border-radius: 50%;
