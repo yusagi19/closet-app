@@ -1078,17 +1078,39 @@ async function init() {
   document.body.addEventListener('change', handleChange);
   document.body.addEventListener('input',  handleInput);
 
-  // Swipe-back gesture (left edge → swipe right)
-  let swipeStartX = 0, swipeStartY = 0;
+  // Swipe gestures
+  let swipeStartX = 0, swipeStartY = 0, swipeTarget = null;
   document.body.addEventListener('touchstart', e => {
     swipeStartX = e.touches[0].clientX;
     swipeStartY = e.touches[0].clientY;
+    swipeTarget = e.target;
   }, { passive: true });
   document.body.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - swipeStartX;
     const dy = e.changedTouches[0].clientY - swipeStartY;
-    if (swipeStartX < 60 && dx > 80 && Math.abs(dy) < 80 && navStack.length > 0) {
+    if (Math.abs(dy) >= 80) return;
+
+    // 戻るジェスチャー（左端から右スワイプ）
+    if (swipeStartX < 60 && dx > 80 && navStack.length > 0) {
       goBack();
+      return;
+    }
+
+    // ホーム画面：タブ切り替え（左右スワイプ）
+    // カテゴリチップの横スクロール中は無視
+    if (state.view === 'home' && Math.abs(dx) > 80
+        && !swipeTarget.closest('.category-scroll')) {
+      const OWNER_IDS = ['all', ...OWNERS.map(o => o.id)];
+      const cur = OWNER_IDS.indexOf(state.filter.owner);
+      if (dx > 0 && cur < OWNER_IDS.length - 1) {
+        // 右スワイプ → 次のタブ（全員→母→父→子）
+        state.filter.owner = OWNER_IDS[cur + 1];
+        render();
+      } else if (dx < 0 && cur > 0) {
+        // 左スワイプ → 前のタブ（子→父→母→全員）
+        state.filter.owner = OWNER_IDS[cur - 1];
+        render();
+      }
     }
   }, { passive: true });
 
