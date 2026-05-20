@@ -266,38 +266,40 @@ function renderSearch() {
         </div>
       </div>
 
-      <div class="filter-section">
-        <p class="filter-label">所有者</p>
-        <div class="filter-chips">
-          ${searchChip('owner','all','全員')}
-          ${OWNERS.map(o => searchChip('owner', o.id, o.label)).join('')}
+      <div class="scroll-body">
+        <div class="filter-section">
+          <p class="filter-label">所有者</p>
+          <div class="filter-chips">
+            ${searchChip('owner','all','全員')}
+            ${OWNERS.map(o => searchChip('owner', o.id, o.label)).join('')}
+          </div>
+
+          <p class="filter-label">カテゴリ</p>
+          <div class="filter-chips">
+            ${searchChip('category','all','全て')}
+            ${CATEGORIES.map(c => searchChip('category', c.id, `${c.icon} ${c.label}`)).join('')}
+          </div>
+
+          <p class="filter-label">カラー</p>
+          <div class="filter-chips">
+            ${searchChip('color','all','全て')}
+            ${COLORS.map(c => `
+              <button class="filter-chip${state.search.color === c.id ? ' active' : ''}"
+                data-action="searchFilter" data-type="color" data-value="${c.id}">
+                <span class="color-dot" style="background:${c.hex}"></span>${c.label}
+              </button>`).join('')}
+          </div>
         </div>
 
-        <p class="filter-label">カテゴリ</p>
-        <div class="filter-chips">
-          ${searchChip('category','all','全て')}
-          ${CATEGORIES.map(c => searchChip('category', c.id, `${c.icon} ${c.label}`)).join('')}
+        <div id="search-results">
+          <div class="item-count">${results.length}件</div>
+          ${results.length > 0
+            ? `<div class="item-grid">${results.map(itemCard).join('')}</div>`
+            : `<div class="empty-state">
+                 <div class="empty-icon">🔍</div>
+                 <p class="empty-title">見つかりません</p>
+               </div>`}
         </div>
-
-        <p class="filter-label">カラー</p>
-        <div class="filter-chips">
-          ${searchChip('color','all','全て')}
-          ${COLORS.map(c => `
-            <button class="filter-chip${state.search.color === c.id ? ' active' : ''}"
-              data-action="searchFilter" data-type="color" data-value="${c.id}">
-              <span class="color-dot" style="background:${c.hex}"></span>${c.label}
-            </button>`).join('')}
-        </div>
-      </div>
-
-      <div id="search-results" class="scroll-body">
-        <div class="item-count">${results.length}件</div>
-        ${results.length > 0
-          ? `<div class="item-grid">${results.map(itemCard).join('')}</div>`
-          : `<div class="empty-state">
-               <div class="empty-icon">🔍</div>
-               <p class="empty-title">見つかりません</p>
-             </div>`}
       </div>
 
       ${bottomNav()}
