@@ -1107,12 +1107,12 @@ async function init() {
         && !swipeTarget.closest('.category-scroll')) {
       const OWNER_IDS = ['all', ...OWNERS.map(o => o.id)];
       const cur = OWNER_IDS.indexOf(state.filter.owner);
-      if (dx > 0 && cur < OWNER_IDS.length - 1) {
-        // 右スワイプ → 次のタブ（全員→母→父→子）
+      if (dx < 0 && cur < OWNER_IDS.length - 1) {
+        // 左スワイプ → 次のタブ（全員→母→父→子）
         state.filter.owner = OWNER_IDS[cur + 1];
         render();
-      } else if (dx < 0 && cur > 0) {
-        // 左スワイプ → 前のタブ（子→父→母→全員）
+      } else if (dx > 0 && cur > 0) {
+        // 右スワイプ → 前のタブ（子→父→母→全員）
         state.filter.owner = OWNER_IDS[cur - 1];
         render();
       }
