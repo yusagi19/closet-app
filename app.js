@@ -883,7 +883,15 @@ async function init() {
   render();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(console.error);
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      reg.update();
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        w.addEventListener('statechange', () => {
+          if (w.state === 'activated') window.location.reload();
+        });
+      });
+    }).catch(console.error);
   }
 }
 
