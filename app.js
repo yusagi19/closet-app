@@ -1078,6 +1078,20 @@ async function init() {
   document.body.addEventListener('change', handleChange);
   document.body.addEventListener('input',  handleInput);
 
+  // Swipe-back gesture (left edge → swipe right)
+  let swipeStartX = 0, swipeStartY = 0;
+  document.body.addEventListener('touchstart', e => {
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+  }, { passive: true });
+  document.body.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    if (swipeStartX < 60 && dx > 80 && Math.abs(dy) < 80 && navStack.length > 0) {
+      goBack();
+    }
+  }, { passive: true });
+
   try {
     await db.open();
     state.items = await db.getAll();
