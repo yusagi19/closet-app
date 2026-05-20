@@ -57,8 +57,9 @@ const state = {
   filter:        { owner: 'all', category: 'all' },
   search:        { query: '', owner: 'all', category: 'all', color: 'all', includeArchived: false },
   photoData:     null,
-  batchItems:    [],
-  batchDefaults: { owner: '', category: '' },
+  batchItems:        [],
+  batchDefaults:     { owner: '', category: '' },
+  showBackupBanner:  false,
 };
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
@@ -186,6 +187,17 @@ function renderHome() {
         <h1 class="app-title">アイテム管理</h1>
         <button class="btn-icon" data-action="batchRegister" title="一括登録">📸</button>
       </div>
+
+      ${state.showBackupBanner ? `
+      <div class="backup-banner">
+        <span class="backup-banner-icon">💾</span>
+        <div class="backup-banner-body">
+          <p class="backup-banner-title">バックアップを取ろう</p>
+          <p class="backup-banner-sub">最後のバックアップから1ヶ月が経過しました</p>
+        </div>
+        <button class="backup-banner-btn" data-action="backupFromBanner">今すぐ</button>
+        <button class="backup-banner-close" data-action="dismissBackupBanner">✕</button>
+      </div>` : ''}
 
       <div class="owner-tabs">
         ${ownerTab('all', '全員')}
@@ -750,6 +762,17 @@ function handleClick(e) {
       exportData();
       break;
 
+    case 'backupFromBanner':
+      state.showBackupBanner = false;
+      exportData();
+      break;
+
+    case 'dismissBackupBanner':
+      state.showBackupBanner = false;
+      localStorage.setItem('lastBackupDate', new Date().toISOString());
+      render();
+      break;
+
     case 'importData':
       document.getElementById('import-input')?.click();
       break;
@@ -994,6 +1017,8 @@ function exportData() {
     alert('エクスポートするアイテムがありません');
     return;
   }
+  localStorage.setItem('lastBackupDate', new Date().toISOString());
+  state.showBackupBanner = false;
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -1059,6 +1084,15 @@ async function init() {
     state.items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch (err) {
     console.error('DB error:', err);
+  }
+
+  // バックアップリマインダーチェック
+  const lastBackup = localStorage.getItem('lastBackupDate');
+  if (!lastBackup) {
+    localStorage.setItem('lastBackupDate', new Date().toISOString());
+  } else {
+    const days = (Date.now() - new Date(lastBackup).getTime()) / (1000 * 60 * 60 * 24);
+    if (days >= 30) state.showBackupBanner = true;
   }
 
   render();
