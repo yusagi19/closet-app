@@ -134,7 +134,8 @@ function applySearch(items, { query, owner, category, color, includeArchived }) 
 // ── Navigation ────────────────────────────────────────────────────────────────
 
 function navigate(view, params = {}) {
-  navStack.push({ view: state.view, params: state.viewParams });
+  const scrollEl = document.querySelector('.scroll-body');
+  navStack.push({ view: state.view, params: state.viewParams, scrollTop: scrollEl ? scrollEl.scrollTop : 0 });
   state.view = view;
   state.viewParams = params;
   render();
@@ -146,6 +147,10 @@ function goBack() {
     state.view = prev.view;
     state.viewParams = prev.params;
     render();
+    if (prev.scrollTop) {
+      const scrollEl = document.querySelector('.scroll-body');
+      if (scrollEl) scrollEl.scrollTop = prev.scrollTop;
+    }
   }
 }
 
