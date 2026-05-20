@@ -55,7 +55,7 @@ const state = {
   tab:           'home',
   items:         [],
   filter:        { owner: 'all', category: 'all' },
-  search:        { query: '', owner: 'all', category: 'all', color: 'all' },
+  search:        { query: '', owner: 'all', category: 'all', color: 'all', includeArchived: false },
   photoData:     null,
   batchItems:    [],
   batchDefaults: { owner: '', category: '' },
@@ -108,15 +108,17 @@ async function compressImage(file) {
 
 function applyFilter(items, { owner, category }) {
   return items.filter(item => {
+    if (item.archived) return false;
     if (owner    !== 'all' && item.owner    !== owner)    return false;
     if (category !== 'all' && item.category !== category) return false;
     return true;
   });
 }
 
-function applySearch(items, { query, owner, category, color }) {
+function applySearch(items, { query, owner, category, color, includeArchived }) {
   const q = query.trim().toLowerCase();
   return items.filter(item => {
+    if (!includeArchived && item.archived) return false;
     if (owner    !== 'all' && item.owner    !== owner)    return false;
     if (category !== 'all' && item.category !== category) return false;
     if (color    !== 'all' && item.color    !== color)    return false;
@@ -230,12 +232,13 @@ function itemCard(item) {
   const o   = ownerOf(item.owner);
   const cat = categoryOf(item.category);
   return `
-    <div class="item-card" data-action="detail" data-id="${item.id}">
+    <div class="item-card${item.archived ? ' item-card--archived' : ''}" data-action="detail" data-id="${item.id}">
       <div class="item-card-photo">
         ${item.photo
           ? `<img src="${item.photo}" alt="${escHtml(item.name)}" loading="lazy">`
           : `<div class="item-card-no-photo">${cat ? cat.icon : '📦'}</div>`}
         ${o ? `<div class="item-card-owner-dot" style="background:${o.color}"></div>` : ''}
+        ${item.archived ? `<div class="item-card-archived-badge">📦</div>` : ''}
       </div>
       <div class="item-card-info">
         ${cat ? `<span class="item-cat-badge">${cat.icon} ${cat.label}</span>` : ''}
@@ -268,6 +271,9 @@ function renderSearch() {
             placeholder="ブランド・アイテム名で検索"
             value="${escHtml(state.search.query)}">
         </div>
+        <button class="archive-toggle${state.search.includeArchived ? ' active' : ''}" data-action="toggleArchived">
+          📦 アーカイブを含む
+        </button>
       </div>
 
       <div class="filter-section">
@@ -587,6 +593,7 @@ function renderDetail() {
         <button class="btn-back" data-action="back">‹ 戻る</button>
         <div class="detail-header-actions">
           <button class="btn-icon" data-action="edit" data-id="${item.id}" title="編集">✎</button>
+          <button class="btn-icon btn-archive${item.archived ? ' archived' : ''}" data-action="${item.archived ? 'unarchive' : 'archive'}" data-id="${item.id}" title="${item.archived ? '元に戻す' : 'アーカイブ'}">${item.archived ? '↩' : '📦'}</button>
           <button class="btn-icon btn-danger" data-action="delete" data-id="${item.id}" title="削除">🗑</button>
         </div>
       </div>
@@ -600,6 +607,7 @@ function renderDetail() {
           <div class="detail-badges">
             ${o   ? `<span class="badge" style="color:${o.color};background:${o.bg}">${o.label}</span>` : ''}
             ${cat ? `<span class="badge badge-cat">${cat.icon} ${cat.label}</span>` : ''}
+            ${item.archived ? `<span class="badge badge-archived">📦 アーカイブ済</span>` : ''}
           </div>
 
           ${item.brand ? `<p class="detail-brand">${escHtml(item.brand)}</p>` : ''}
@@ -715,6 +723,19 @@ function handleClick(e) {
 
     case 'delete':
       deleteItem(id);
+      break;
+
+    case 'archive':
+      archiveItem(id);
+      break;
+
+    case 'unarchive':
+      unarchiveItem(id);
+      break;
+
+    case 'toggleArchived':
+      state.search.includeArchived = !state.search.includeArchived;
+      render();
       break;
 
     case 'pickPhoto':
@@ -913,6 +934,26 @@ async function deleteItem(id) {
     console.error(err);
     alert('削除に失敗しました');
   }
+}
+
+async function archiveItem(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+  item.archived = true;
+  try {
+    await db.put(item);
+    goBack();
+  } catch (err) { console.error(err); alert('失敗しました'); }
+}
+
+async function unarchiveItem(id) {
+  const item = state.items.find(i => i.id === id);
+  if (!item) return;
+  item.archived = false;
+  try {
+    await db.put(item);
+    render();
+  } catch (err) { console.error(err); alert('失敗しました'); }
 }
 
 async function saveBatchItems() {

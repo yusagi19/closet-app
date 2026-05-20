@@ -811,6 +811,47 @@ img { display: block; }
   box-shadow: 0 2px 8px rgba(193,127,142,.4);
 }
 
+/* ── Archive ──────────────────────────────────────── */
+.btn-archive {
+  background: #FFF3E0;
+  color: #E65100;
+  font-size: 16px;
+}
+.btn-archive.archived {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+.badge-archived {
+  background: #FFF3E0;
+  color: #E65100;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+.archive-toggle {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 0 2px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.archive-toggle.active {
+  color: #E65100;
+  font-weight: 600;
+}
+.item-card--archived {
+  opacity: 0.6;
+}
+.item-card-archived-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
 /* ── Batch Register ───────────────────────────────── */
 .batch-select-area {
   padding: 20px 16px;
