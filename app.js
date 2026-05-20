@@ -50,13 +50,15 @@ const COLORS = [
 const navStack = [];
 
 const state = {
-  view:       'home',
-  viewParams: {},
-  tab:        'home',
-  items:      [],
-  filter:     { owner: 'all', category: 'all' },
-  search:     { query: '', owner: 'all', category: 'all', color: 'all' },
-  photoData:  null,
+  view:          'home',
+  viewParams:    {},
+  tab:           'home',
+  items:         [],
+  filter:        { owner: 'all', category: 'all' },
+  search:        { query: '', owner: 'all', category: 'all', color: 'all' },
+  photoData:     null,
+  batchItems:    [],
+  batchDefaults: { owner: '', category: '' },
 };
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
@@ -163,6 +165,7 @@ const VIEW_MAP = {
   add:    renderForm,
   edit:   renderForm,
   detail: renderDetail,
+  batch:  renderBatch,
 };
 
 function render() {
@@ -179,6 +182,7 @@ function renderHome() {
     <div class="screen">
       <div class="app-header">
         <h1 class="app-title">アイテム管理</h1>
+        <button class="btn-icon" data-action="batchRegister" title="一括登録">📸</button>
       </div>
 
       <div class="owner-tabs">
@@ -504,6 +508,69 @@ function renderForm() {
     </div>`;
 }
 
+// ── Batch Register ────────────────────────────────────────────────────────────
+
+function renderBatch() {
+  const { batchItems, batchDefaults } = state;
+  const hasItems = batchItems.length > 0;
+  return `
+    <div class="screen">
+      <div class="app-header">
+        <button class="btn-icon" data-action="back">←</button>
+        <h1 class="app-title">一括登録</h1>
+        ${hasItems ? `<button class="btn-batch-save" data-action="saveBatch">${batchItems.length}件を保存</button>` : '<span></span>'}
+      </div>
+
+      <div class="scroll-body">
+        <div class="batch-select-area">
+          <button class="btn-batch-select" data-action="pickBatchPhotos">📸 写真を選択（複数可）</button>
+          <input id="batch-photo-input" type="file" accept="image/*" multiple style="display:none">
+        </div>
+
+        ${hasItems ? `
+        <div class="batch-defaults-section">
+          <p class="batch-defaults-title">共通設定（全アイテムに適用）</p>
+          <div class="batch-defaults-form">
+            <div class="batch-default-field">
+              <label>所有者 <span class="required">必須</span></label>
+              <select id="batch-owner" data-action="batchOwner">
+                <option value="">選択してください</option>
+                ${OWNERS.map(o => `<option value="${o.id}"${batchDefaults.owner === o.id ? ' selected' : ''}>${o.label}</option>`).join('')}
+              </select>
+            </div>
+            <div class="batch-default-field">
+              <label>カテゴリ <span class="required">必須</span></label>
+              <select id="batch-category" data-action="batchCategory">
+                <option value="">選択してください</option>
+                ${CATEGORIES.map(c => `<option value="${c.id}"${batchDefaults.category === c.id ? ' selected' : ''}>${c.icon} ${c.label}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="batch-grid">
+          ${batchItems.map((item, i) => `
+            <div class="batch-card">
+              <div class="batch-card-photo">
+                <img src="${item.photoData}" alt="">
+                <button class="batch-card-remove" data-action="removeBatchItem" data-index="${i}">✕</button>
+              </div>
+              <input class="batch-card-name" type="text" placeholder="アイテム名（任意）"
+                data-action="batchItemName" data-index="${i}" value="${escHtml(item.name || '')}">
+            </div>
+          `).join('')}
+        </div>
+        ` : `
+        <div class="empty-state">
+          <div class="empty-icon">📸</div>
+          <p class="empty-title">写真を選択してください</p>
+          <p class="empty-sub">複数の写真をまとめて選べます</p>
+        </div>
+        `}
+      </div>
+    </div>`;
+}
+
 // ── Detail ────────────────────────────────────────────────────────────────────
 
 function renderDetail() {
@@ -665,6 +732,27 @@ function handleClick(e) {
     case 'importData':
       document.getElementById('import-input')?.click();
       break;
+
+    case 'batchRegister':
+      state.batchItems = [];
+      state.batchDefaults = { owner: '', category: '' };
+      navigate('batch', {});
+      break;
+
+    case 'pickBatchPhotos':
+      document.getElementById('batch-photo-input')?.click();
+      break;
+
+    case 'removeBatchItem': {
+      const idx = parseInt(el.dataset.index);
+      state.batchItems.splice(idx, 1);
+      render();
+      break;
+    }
+
+    case 'saveBatch':
+      saveBatchItems();
+      break;
   }
 }
 
@@ -693,6 +781,22 @@ function handleChange(e) {
     return;
   }
 
+  // Batch photo selection
+  if (e.target.id === 'batch-photo-input') {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    Promise.all(files.map(f => compressImage(f))).then(results => {
+      results.forEach(photoData => state.batchItems.push({ photoData, name: '' }));
+      render();
+    });
+    e.target.value = '';
+    return;
+  }
+
+  // Batch defaults
+  if (e.target.id === 'batch-owner')    { state.batchDefaults.owner    = e.target.value; return; }
+  if (e.target.id === 'batch-category') { state.batchDefaults.category = e.target.value; return; }
+
   // Owner radio
   if (e.target.name === 'owner') {
     document.querySelectorAll('.radio-option').forEach(el => {
@@ -711,6 +815,11 @@ function handleChange(e) {
 }
 
 function handleInput(e) {
+  if (e.target.dataset.action === 'batchItemName') {
+    const i = parseInt(e.target.dataset.index);
+    if (state.batchItems[i]) state.batchItems[i].name = e.target.value;
+    return;
+  }
   if (e.target.id === 'search-input') {
     state.search.query = e.target.value;
     clearTimeout(searchTimer);
@@ -804,6 +913,37 @@ async function deleteItem(id) {
     console.error(err);
     alert('削除に失敗しました');
   }
+}
+
+async function saveBatchItems() {
+  const { batchItems, batchDefaults } = state;
+  if (!batchDefaults.owner)    { alert('所有者を選択してください'); return; }
+  if (!batchDefaults.category) { alert('カテゴリを選択してください'); return; }
+  const now = new Date();
+  for (let i = 0; i < batchItems.length; i++) {
+    const item = {
+      id:           uid(),
+      owner:        batchDefaults.owner,
+      category:     batchDefaults.category,
+      name:         batchItems[i].name || '',
+      brand:        '',
+      color:        '',
+      size:         '',
+      purchaseDate: '',
+      price:        '',
+      notes:        '',
+      photo:        batchItems[i].photoData,
+      createdAt:    new Date(now.getTime() + i).toISOString(),
+    };
+    await db.add(item);
+    state.items.push(item);
+  }
+  state.items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const count = batchItems.length;
+  state.batchItems = [];
+  state.batchDefaults = { owner: '', category: '' };
+  alert(`${count}件を登録しました！`);
+  switchTab('home');
 }
 
 // ── Backup / Restore ─────────────────────────────────────────────────────────
