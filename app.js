@@ -266,21 +266,23 @@ function renderSearch() {
         </div>
       </div>
 
-      <div class="scroll-body">
-        <div class="filter-section">
-          <p class="filter-label">所有者</p>
+      <div class="filter-section">
+        <div class="filter-row">
+          <span class="filter-label">所有者</span>
           <div class="filter-chips">
             ${searchChip('owner','all','全員')}
             ${OWNERS.map(o => searchChip('owner', o.id, o.label)).join('')}
           </div>
-
-          <p class="filter-label">カテゴリ</p>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">カテゴリ</span>
           <div class="filter-chips">
             ${searchChip('category','all','全て')}
             ${CATEGORIES.map(c => searchChip('category', c.id, `${c.icon} ${c.label}`)).join('')}
           </div>
-
-          <p class="filter-label">カラー</p>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">カラー</span>
           <div class="filter-chips">
             ${searchChip('color','all','全て')}
             ${COLORS.map(c => `
@@ -290,16 +292,16 @@ function renderSearch() {
               </button>`).join('')}
           </div>
         </div>
+      </div>
 
-        <div id="search-results">
-          <div class="item-count">${results.length}件</div>
-          ${results.length > 0
-            ? `<div class="item-grid">${results.map(itemCard).join('')}</div>`
-            : `<div class="empty-state">
-                 <div class="empty-icon">🔍</div>
-                 <p class="empty-title">見つかりません</p>
-               </div>`}
-        </div>
+      <div id="search-results" class="scroll-body">
+        <div class="item-count">${results.length}件</div>
+        ${results.length > 0
+          ? `<div class="item-grid">${results.map(itemCard).join('')}</div>`
+          : `<div class="empty-state">
+               <div class="empty-icon">🔍</div>
+               <p class="empty-title">見つかりません</p>
+             </div>`}
       </div>
 
       ${bottomNav()}
