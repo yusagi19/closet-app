@@ -290,7 +290,7 @@ function renderSearch() {
         </div>
       </div>
 
-      <div class="scroll-body">
+      <div id="search-results" class="scroll-body">
         <div class="item-count">${results.length}件</div>
         ${results.length > 0
           ? `<div class="item-grid">${results.map(itemCard).join('')}</div>`
@@ -623,10 +623,10 @@ function handleClick(e) {
 
     case 'searchFilter':
       state.search[type] = value;
-      render();
-      // Restore focus to search input
-      const si = document.getElementById('search-input');
-      if (si) { si.focus(); si.setSelectionRange(si.value.length, si.value.length); }
+      document.querySelectorAll(`[data-action="searchFilter"][data-type="${type}"]`).forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === value);
+      });
+      updateSearchResults();
       break;
 
     case 'detail':
@@ -710,14 +710,23 @@ function handleInput(e) {
   if (e.target.id === 'search-input') {
     state.search.query = e.target.value;
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      const si = document.getElementById('search-input');
-      const pos = si?.selectionStart;
-      render();
-      const restored = document.getElementById('search-input');
-      if (restored) { restored.focus(); restored.setSelectionRange(pos, pos); }
-    }, 200);
+    searchTimer = setTimeout(updateSearchResults, 200);
   }
+}
+
+function updateSearchResults() {
+  const container = document.getElementById('search-results');
+  if (!container) return;
+  const results = applySearch(state.items, state.search);
+  container.innerHTML = `
+    <div class="item-count">${results.length}件</div>
+    ${results.length > 0
+      ? `<div class="item-grid">${results.map(itemCard).join('')}</div>`
+      : `<div class="empty-state">
+           <div class="empty-icon">🔍</div>
+           <p class="empty-title">見つかりません</p>
+         </div>`}
+  `;
 }
 
 // ── CRUD ─────────────────────────────────────────────────────────────────────
