@@ -384,6 +384,30 @@ img { display: block; }
   color: var(--primary-dark);
   font-weight: 600;
 }
+.date-range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+}
+.date-range-input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1.5px solid var(--separator);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+}
+.date-range-input:focus { outline: none; border-color: var(--primary); }
+.date-range-sep {
+  color: var(--text-3);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
 .color-dot {
   display: inline-block;
   width: 12px;
@@ -700,8 +724,8 @@ img { display: block; }
 .detail-photo {
   width: 100%;
   aspect-ratio: 4/3;
-  object-fit: cover;
-  background: var(--bg);
+  object-fit: contain;
+  background: var(--card);
 }
 .detail-no-photo {
   width: 100%;

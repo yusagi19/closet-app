@@ -55,7 +55,7 @@ const state = {
   tab:           'home',
   items:         [],
   filter:        { owner: 'all', category: 'all' },
-  search:        { query: '', owner: 'all', category: 'all', color: 'all', includeArchived: false },
+  search:        { query: '', owner: 'all', category: 'all', color: 'all', dateFrom: '', dateTo: '', includeArchived: false },
   photoData:     null,
   batchItems:        [],
   batchDefaults:     { owner: '', category: '' },
@@ -116,13 +116,15 @@ function applyFilter(items, { owner, category }) {
   });
 }
 
-function applySearch(items, { query, owner, category, color, includeArchived }) {
+function applySearch(items, { query, owner, category, color, dateFrom, dateTo, includeArchived }) {
   const q = query.trim().toLowerCase();
   return items.filter(item => {
     if (!includeArchived && item.archived) return false;
     if (owner    !== 'all' && item.owner    !== owner)    return false;
     if (category !== 'all' && item.category !== category) return false;
     if (color    !== 'all' && item.color    !== color)    return false;
+    if (dateFrom && item.purchaseDate && item.purchaseDate < dateFrom) return false;
+    if (dateTo   && item.purchaseDate && item.purchaseDate > dateTo)   return false;
     if (q) {
       const hay = [item.name, item.brand, item.notes].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
@@ -317,6 +319,14 @@ function renderSearch() {
                 data-action="searchFilter" data-type="color" data-value="${c.id}">
                 <span class="color-dot" style="background:${c.hex}"></span>${c.label}
               </button>`).join('')}
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">購入日</span>
+          <div class="date-range-wrap">
+            <input type="date" id="search-date-from" class="date-range-input" value="${state.search.dateFrom}">
+            <span class="date-range-sep">〜</span>
+            <input type="date" id="search-date-to" class="date-range-input" value="${state.search.dateTo}">
           </div>
         </div>
       </div>
@@ -873,6 +883,14 @@ function handleInput(e) {
     state.search.query = e.target.value;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(updateSearchResults, 200);
+  }
+  if (e.target.id === 'search-date-from') {
+    state.search.dateFrom = e.target.value;
+    updateSearchResults();
+  }
+  if (e.target.id === 'search-date-to') {
+    state.search.dateTo = e.target.value;
+    updateSearchResults();
   }
 }
 
