@@ -105,6 +105,44 @@ async function compressImage(file) {
   });
 }
 
+// ── AI Photo Analysis ─────────────────────────────────────────────────────────
+
+async function analyzePhotoWithAI(dataUrl) {
+  const apiKey = localStorage.getItem('claudeApiKey');
+  if (!apiKey) return null;
+  const base64 = dataUrl.split(',')[1];
+  const mediaType = dataUrl.split(';')[0].split(':')[1];
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: 'この写真に写っている洋服・ファッションアイテムを分析してください。アイテム名（例：白Tシャツ、デニムジャケット）、ブランド名、価格（数値のみ）をJSONのみ返してください。不明はnull。例：{"name":"白Tシャツ","brand":"UNIQLO","price":1990}' }
+          ]
+        }]
+      })
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const text = json.content[0].text;
+    const match = text.match(/\{[\s\S]*\}/);
+    return match ? JSON.parse(match[0]) : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Filtering ─────────────────────────────────────────────────────────────────
 
 function applyFilter(items, { owner, category }) {
@@ -416,6 +454,17 @@ function renderStats() {
         </div>
 
         <div class="stats-section">
+          <h3 class="stats-heading">AI自動入力</h3>
+          <div class="backup-body">
+            <p class="backup-desc">Claude APIキーを設定すると、写真を登録したときにアイテム名・ブランド・価格を自動入力します。</p>
+            <input type="password" class="form-input" id="api-key-input"
+              placeholder="sk-ant-..."
+              value="${localStorage.getItem('claudeApiKey') || ''}">
+            <button class="btn-backup" data-action="saveApiKey" style="margin-top:10px">💾 APIキーを保存</button>
+          </div>
+        </div>
+
+        <div class="stats-section">
           <h3 class="stats-heading">データ管理</h3>
           <div class="backup-body">
             <p class="backup-desc">アイテムデータをJSONファイルに保存・復元できます。ホーム画面からアプリを削除する前にバックアップしておくと安心です。</p>
@@ -473,6 +522,7 @@ function renderForm() {
                </div>`}
         </div>
         <input type="file" id="photo-input" accept="image/*" style="display:none">
+        ${localStorage.getItem('claudeApiKey') ? '<div id="ai-status" class="ai-status"></div>' : ''}
 
         <div class="form-group">
           <label class="form-label">所有者 <span class="required">*</span></label>
@@ -791,6 +841,18 @@ function handleClick(e) {
       render();
       break;
 
+    case 'saveApiKey': {
+      const key = document.getElementById('api-key-input')?.value.trim();
+      if (key) {
+        localStorage.setItem('claudeApiKey', key);
+        alert('APIキーを保存しました。写真登録時に自動解析が有効になります。');
+      } else {
+        localStorage.removeItem('claudeApiKey');
+        alert('APIキーを削除しました。');
+      }
+      break;
+    }
+
     case 'importData':
       document.getElementById('import-input')?.click();
       break;
@@ -831,7 +893,7 @@ function handleChange(e) {
   if (e.target.id === 'photo-input') {
     const file = e.target.files[0];
     if (!file) return;
-    compressImage(file).then(data => {
+    compressImage(file).then(async data => {
       state.photoData = data;
       const picker = document.querySelector('.photo-picker');
       if (picker) {
@@ -839,6 +901,22 @@ function handleChange(e) {
           <img src="${data}" class="photo-preview" alt="写真">
           <div class="photo-change-overlay">タップして変更</div>`;
       }
+      const aiStatus = document.getElementById('ai-status');
+      if (!aiStatus) return;
+      aiStatus.textContent = '🤖 AI解析中...';
+      aiStatus.className = 'ai-status ai-status--loading';
+      const result = await analyzePhotoWithAI(data);
+      if (result) {
+        if (result.name)  { const el = document.getElementById('f-name');  if (el && !el.value) el.value = result.name; }
+        if (result.brand) { const el = document.getElementById('f-brand'); if (el && !el.value) el.value = result.brand; }
+        if (result.price) { const el = document.getElementById('f-price'); if (el && !el.value) el.value = result.price; }
+        aiStatus.textContent = '✅ AI解析完了';
+        aiStatus.className = 'ai-status ai-status--done';
+      } else {
+        aiStatus.textContent = '❌ 解析できませんでした';
+        aiStatus.className = 'ai-status ai-status--error';
+      }
+      setTimeout(() => { aiStatus.textContent = ''; aiStatus.className = 'ai-status'; }, 4000);
     });
     return;
   }

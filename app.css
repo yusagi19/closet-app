@@ -473,6 +473,18 @@ img { display: block; }
   color: var(--text-2);
 }
 
+.ai-status {
+  text-align: center;
+  font-size: 13px;
+  min-height: 20px;
+  padding: 4px 0 0;
+  color: var(--text-2);
+  transition: opacity .3s;
+}
+.ai-status--loading { color: var(--primary-dark); }
+.ai-status--done    { color: #34a853; }
+.ai-status--error   { color: #e74c3c; }
+
 .stats-section {
   margin: 0 16px 16px;
   background: var(--card);
