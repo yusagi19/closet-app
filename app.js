@@ -123,8 +123,11 @@ function applySearch(items, { query, owner, category, color, dateFrom, dateTo, i
     if (owner    !== 'all' && item.owner    !== owner)    return false;
     if (category !== 'all' && item.category !== category) return false;
     if (color    !== 'all' && item.color    !== color)    return false;
-    if (dateFrom && item.purchaseDate && item.purchaseDate < dateFrom) return false;
-    if (dateTo   && item.purchaseDate && item.purchaseDate > dateTo)   return false;
+    if (dateFrom || dateTo) {
+      if (!item.purchaseDate) return false;
+      if (dateFrom && item.purchaseDate < dateFrom) return false;
+      if (dateTo   && item.purchaseDate > dateTo)   return false;
+    }
     if (q) {
       const hay = [item.name, item.brand, item.notes].join(' ').toLowerCase();
       if (!hay.includes(q)) return false;
