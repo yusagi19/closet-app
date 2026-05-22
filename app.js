@@ -55,7 +55,7 @@ const state = {
   tab:           'home',
   items:         [],
   filter:        { owner: 'all', category: 'all' },
-  search:        { query: '', owner: 'all', category: 'all', color: 'all', dateFrom: '', dateTo: '', includeArchived: false },
+  search:        { query: '', owner: 'all', category: 'all', color: 'all', dateFrom: '', dateTo: '', includeArchived: false, sort: 'createdAt_desc' },
   photoData:     null,
   batchItems:        [],
   batchDefaults:     { owner: '', category: '' },
@@ -172,6 +172,28 @@ function applySearch(items, { query, owner, category, color, dateFrom, dateTo, i
     }
     return true;
   });
+}
+
+function applySort(items, sort) {
+  const arr = [...items];
+  switch (sort) {
+    case 'name_asc':
+      return arr.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ja'));
+    case 'category_asc':
+      return arr.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+    case 'purchaseDate_desc':
+      return arr.sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''));
+    case 'purchaseDate_asc':
+      return arr.sort((a, b) => (a.purchaseDate || '').localeCompare(b.purchaseDate || ''));
+    case 'price_desc':
+      return arr.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+    case 'price_asc':
+      return arr.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+    case 'createdAt_asc':
+      return arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    default: // createdAt_desc
+      return arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
@@ -316,7 +338,7 @@ function escHtml(s) {
 // ── Search ────────────────────────────────────────────────────────────────────
 
 function renderSearch() {
-  const results = applySearch(state.items, state.search);
+  const results = applySort(applySearch(state.items, state.search), state.search.sort);
 
   return `
     <div class="screen">
@@ -368,6 +390,21 @@ function renderSearch() {
             <input type="date" id="search-date-from" class="date-range-input" value="${state.search.dateFrom}">
             <span class="date-range-sep">〜</span>
             <input type="date" id="search-date-to" class="date-range-input" value="${state.search.dateTo}">
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">並び替え</span>
+          <div class="sort-wrap">
+            <select id="search-sort" class="sort-select">
+              <option value="createdAt_desc" ${state.search.sort==='createdAt_desc'?'selected':''}>登録日（新しい順）</option>
+              <option value="createdAt_asc"  ${state.search.sort==='createdAt_asc' ?'selected':''}>登録日（古い順）</option>
+              <option value="name_asc"       ${state.search.sort==='name_asc'      ?'selected':''}>アイテム名（あいうえお順）</option>
+              <option value="category_asc"   ${state.search.sort==='category_asc'  ?'selected':''}>カテゴリ順</option>
+              <option value="purchaseDate_desc" ${state.search.sort==='purchaseDate_desc'?'selected':''}>購入日（新しい順）</option>
+              <option value="purchaseDate_asc"  ${state.search.sort==='purchaseDate_asc' ?'selected':''}>購入日（古い順）</option>
+              <option value="price_desc"     ${state.search.sort==='price_desc'    ?'selected':''}>価格（高い順）</option>
+              <option value="price_asc"      ${state.search.sort==='price_asc'     ?'selected':''}>価格（安い順）</option>
+            </select>
           </div>
         </div>
       </div>
@@ -933,6 +970,13 @@ function handleChange(e) {
     return;
   }
 
+  // Sort
+  if (e.target.id === 'search-sort') {
+    state.search.sort = e.target.value;
+    updateSearchResults();
+    return;
+  }
+
   // Batch defaults
   if (e.target.id === 'batch-owner')    { state.batchDefaults.owner    = e.target.value; return; }
   if (e.target.id === 'batch-category') { state.batchDefaults.category = e.target.value; return; }
@@ -978,7 +1022,7 @@ function handleInput(e) {
 function updateSearchResults() {
   const container = document.getElementById('search-results');
   if (!container) return;
-  const results = applySearch(state.items, state.search);
+  const results = applySort(applySearch(state.items, state.search), state.search.sort);
   container.innerHTML = `
     <div class="item-count">${results.length}件</div>
     ${results.length > 0
