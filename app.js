@@ -184,11 +184,22 @@ function applySort(items, sort) {
     case 'purchaseDate_desc':
       return arr.sort((a, b) => (b.purchaseDate || '').localeCompare(a.purchaseDate || ''));
     case 'purchaseDate_asc':
-      return arr.sort((a, b) => (a.purchaseDate || '').localeCompare(b.purchaseDate || ''));
+      // 未設定は末尾に
+      return arr.sort((a, b) => {
+        if (!a.purchaseDate) return b.purchaseDate ? 1 : 0;
+        if (!b.purchaseDate) return -1;
+        return a.purchaseDate.localeCompare(b.purchaseDate);
+      });
     case 'price_desc':
       return arr.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
     case 'price_asc':
-      return arr.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+      // 未設定（0円扱い）は末尾に
+      return arr.sort((a, b) => {
+        const pa = Number(a.price) || 0, pb = Number(b.price) || 0;
+        if (!pa) return pb ? 1 : 0;
+        if (!pb) return -1;
+        return pa - pb;
+      });
     case 'createdAt_asc':
       return arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     default: // createdAt_desc
