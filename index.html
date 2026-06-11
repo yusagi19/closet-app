@@ -10,23 +10,23 @@
   <title>クローゼット管理</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="app.css?v=27">
+  <link rel="stylesheet" href="app.css?v=28">
   <style>
     /* inline to bypass CSS cache */
     .screen { height: 100% !important; }
     .bottom-nav {
       position: fixed !important;
       bottom: 0 !important; left: 0 !important; right: 0 !important;
-      height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
-      padding-bottom: 0 !important;
+      height: auto !important;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) / 2) !important;
     }
     .nav-item {
-      height: 100% !important;
-      justify-content: flex-end !important;
-      padding-bottom: 6px !important;
+      height: 50px !important;
+      justify-content: center !important;
+      padding-bottom: 0 !important;
     }
-    .scroll-body { padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px) + 20px) !important; }
-    .fab { bottom: calc(50px + env(safe-area-inset-bottom, 0px) + 16px) !important; }
+    .scroll-body { padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px) / 2 + 20px) !important; }
+    .fab { bottom: calc(50px + env(safe-area-inset-bottom, 0px) / 2 + 16px) !important; }
   </style>
 </head>
 <body>
