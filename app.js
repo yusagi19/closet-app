@@ -836,9 +836,16 @@ function handleClick(e) {
       updateSearchResults();
       break;
 
-    case 'detail':
-      navigate('detail', { id });
+    case 'detail': {
+      let idList;
+      if (state.view === 'home') {
+        idList = applyFilter(state.items, state.filter).map(i => i.id);
+      } else if (state.view === 'search') {
+        idList = applySort(applySearch(state.items, state.search), state.search.sort).map(i => i.id);
+      }
+      navigate('detail', { id, idList });
       break;
+    }
 
     case 'edit': {
       const item = state.items.find(i => i.id === id);
@@ -1252,6 +1259,24 @@ async function init() {
     // 戻るジェスチャー（左端から右スワイプ）
     if (swipeStartX < 60 && dx > 80 && navStack.length > 0) {
       goBack();
+      return;
+    }
+
+    // アイテム詳細：左右スワイプで前後のアイテムへ
+    if (state.view === 'detail' && Math.abs(dx) > 80) {
+      const { idList, id } = state.viewParams;
+      if (idList && idList.length > 1) {
+        const cur = idList.indexOf(id);
+        if (dx < 0 && cur < idList.length - 1) {
+          // 左スワイプ → 次のアイテム
+          state.viewParams = { id: idList[cur + 1], idList };
+          render();
+        } else if (dx > 0 && cur > 0) {
+          // 右スワイプ → 前のアイテム
+          state.viewParams = { id: idList[cur - 1], idList };
+          render();
+        }
+      }
       return;
     }
 
