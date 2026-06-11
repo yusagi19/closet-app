@@ -518,7 +518,7 @@ function renderStats() {
             <p class="backup-desc">アイテムデータをJSONファイルに保存・復元できます。ホーム画面からアプリを削除する前にバックアップしておくと安心です。</p>
             <button class="btn-backup" data-action="exportData">📤 バックアップを保存</button>
             <button class="btn-backup btn-backup-import" data-action="importData">📥 バックアップから復元</button>
-            <input type="file" id="import-input" accept=".json" style="display:none">
+            <input type="file" id="import-input" accept=".json,application/json,text/plain,*/*" style="display:none">
           </div>
         </div>
       </div>
