@@ -1,5 +1,5 @@
-const CACHE = 'closet-v35';
-const ASSETS = ['./index.html', './app.css?v=29', './db.js?v=23', './app.js?v=29', './manifest.json'];
+const CACHE = 'closet-v36';
+const ASSETS = ['./index.html', './app.css?v=30', './db.js?v=23', './app.js?v=29', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
